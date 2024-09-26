@@ -4,7 +4,6 @@ import (
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"go.uber.org/zap"
-	"gva-base-frame/server/global"
 	"strings"
 	"time"
 )
@@ -40,7 +39,7 @@ func GetMqttClient(config MQTT, callback mqtt.MessageHandler) mqtt.Client {
 	options.SetDefaultPublishHandler(defaultPublishHandler)
 	client := mqtt.NewClient(options)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		global.Logger.Error("connect failed", zap.Error(token.Error()))
+		log.Error("connect failed", zap.Error(token.Error()))
 		time.Sleep(5 * time.Second)
 		return GetMqttClient(config, callback)
 	}
@@ -71,14 +70,14 @@ func DefaultPublishMQTT(client mqtt.Client, topic string, payload interface{}) {
 }
 
 func onConnectLost(client mqtt.Client, err error) {
-	global.Logger.Error("mqtt connect lost", zap.Error(err))
+	log.Error("mqtt connect lost", zap.Error(err))
 	// 重连
 	for i := 0; i < 5; i++ {
 		if token := client.Connect(); token.Wait() && token.Error() == nil {
-			global.Logger.Info("reconnect successfully")
+			log.Info("reconnect successfully")
 			break
 		} else {
-			global.Logger.Error("reconnect failed", zap.Any("attempt", i+1), zap.Error(token.Error()))
+			log.Error("reconnect failed", zap.Any("attempt", i+1), zap.Error(token.Error()))
 			time.Sleep(10)
 		}
 	}
