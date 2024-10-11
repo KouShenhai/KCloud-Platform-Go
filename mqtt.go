@@ -1,4 +1,4 @@
-package datasource
+package main
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ func GetMqttClient(config MQTT, callback mqtt.MessageHandler) mqtt.Client {
 	options.SetDefaultPublishHandler(defaultPublishHandler)
 	client := mqtt.NewClient(options)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		log.Error("connect failed", zap.Error(token.Error()))
+		fmt.Println("connect failed", zap.Error(token.Error()))
 		time.Sleep(5 * time.Second)
 		return GetMqttClient(config, callback)
 	}
@@ -70,14 +70,14 @@ func DefaultPublishMQTT(client mqtt.Client, topic string, payload interface{}) {
 }
 
 func onConnectLost(client mqtt.Client, err error) {
-	log.Error("mqtt connect lost", zap.Error(err))
+	fmt.Println("mqtt connect lost", zap.Error(err))
 	// 重连
 	for i := 0; i < 5; i++ {
 		if token := client.Connect(); token.Wait() && token.Error() == nil {
-			log.Info("reconnect successfully")
+			fmt.Println("reconnect successfully")
 			break
 		} else {
-			log.Error("reconnect failed", zap.Any("attempt", i+1), zap.Error(token.Error()))
+			fmt.Println("reconnect failed", zap.Any("attempt", i+1), zap.Error(token.Error()))
 			time.Sleep(10)
 		}
 	}
